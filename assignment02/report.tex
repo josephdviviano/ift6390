@@ -1,0 +1,394 @@
+%&pdflatex
+%% filename: amsart-template.tex, version: 2.1
+\documentclass[reqno]{amsart}
+\usepackage{hyperref}
+\usepackage{inputenc}
+\usepackage{graphicx}
+\usepackage{bbm}
+\usepackage{amssymb}
+\usepackage{listings}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{xca}[theorem]{Exercise}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\numberwithin{equation}{section}
+\setlength{\parindent}{0pt} % turn off auto-indent
+
+\graphicspath{ {./} }
+
+\begin{document}
+
+\title{Assignment 2: [IFT6390]}
+
+\author{L\'ea Ricard \& Joseph D. Viviano}
+\address{Universit\'e de Montr\'eal}
+\curraddr{}
+\email{joseph@viviano.ca, lea.ricard@umontreal.ca}
+\thanks{}
+\date{Nov 2018}
+
+\maketitle
+%------------------------------------------------------------------------------
+%--------------------Linear and non-linear regularized regression--------------
+%------------------------------------------------------------------------------
+\section{Linear and non-linear regularized regression}
+
+\subsection{Linear Regression}
+
+\textit{Consider a regression problem for which we have a training dataset $D_{n}= {(\mathbf{x}^{1}, t^{1}), . . . , (\mathbf{x}^{n}, t^{n})}$, a linear transformation defined as $f(x) = \mathbf{w}^T\mathbf{x} + b$, with $\mathbf{x}^{(i)}$ $\in$ ${\rm I\!R}^{d}$, and $t^{(i)}$ $\in$ ${\rm I\!R}$.}\\
+
+\subsubsection{}
+\textit{Precise this model’s set of parameters $\theta$, as well as the nature and dimensionality of each of them.\\}
+
+The vector $\boldsymbol{w}$ contains the parameters of this model, as well as the bias term which is a scalar, so $\theta = \{w_1, w_2, ..., w_d, b\}$.  
+$\theta \in {\rm I\!R}^{d+1}$. \\
+
+\subsubsection{}
+\textit{The loss function typically used for linear regression is the quadratic
+loss:}
+
+\begin{equation}
+    L\big((x, t), f\big) = \big(f(x) - t\big)^{2}
+\end{equation}
+
+\textit{Give the precise mathematical formula of  the empirical risk $\hat{R}$ on the set $D_n$ as the sum of the losses on this set.\\}
+
+We can find the empirical risk by rewriting the negative log likelihood (NLL) formula (equation \ref{NLL}), where $p(t^{(i)}|\mathbf{x}^{(i)}, \theta)$ is following a Gaussian distribution. 
+
+\begin{equation}
+\label{NLL}
+    NLL(\theta) = -\sum_{i = 1}^{N}\log p(t^{i}|\mathbf{x}_{i}, \theta)
+\end{equation}
+
+\begin{align}
+    NLL(\theta) &= -\sum_{i = 1}^{N}\log [(\dfrac{1}{2\pi\sigma^2})^{1/2}  \exp(\dfrac{1}{2\sigma^2}(t^{i}-\mathbf{w}^T\mathbf{x}_{i})^2] \\
+    &= \dfrac{1}{2\sigma^2} \sum_{i=1}^{N}(t^{i}-\mathbf{w}^{T}\mathbf{x}_{i})^2 - \dfrac{N}{2} \log(2\pi\sigma^2) \label{NLL2}
+\end{align}
+
+Where,
+
+\begin{equation}
+    \hat{R}(\mathbf{\theta}) = \sum_{i = 1}^{N}(t^{i}-\mathbf{w}^{T}\mathbf{x}_{i})^2
+\end{equation}
+
+is the residual sum of squares (RRS), or quadratic loss. On a dataset of size N, the empirical risk is given by this equation. Note that $b$ is included in the vector $\mathbf{w^T}$ and there is a corresponding dummy column of ones in $\mathbf{x}$. For the remainder of the assignment, we will use this notation.
+
+\subsubsection{}
+
+\textit{Following the principle of Empirical Risk Minimization (ERM), we are
+going to seek the parameters which yield the smallest quadratic loss.
+Write a mathematical formulation of this minimization problem.}\\
+
+To estimate the parameters, we minimize the negative log likelihood (NNL). 
+
+\begin{align}
+    \hat{\theta} &= argmin - \sum_{i=1}^{N}\log p(t^{i}|\mathbf{x}_i, \theta)\\
+    &= argmin NLL(\theta)
+\end{align}\\set_xscale('log')
+
+From equation \ref{NLL2}, we can see that only the first part (RSS) is dependent on $\mathbf{w}$. Hence, to minimize NLL, we only have to minimize the residual sum of squares (RSS). \\
+
+Therefore we can write the minimization objective as: \\
+
+\begin{equation}
+    \hat{\theta} = argmin \sum_{i=1}^{N}(t^{i}-\mathbf{w}^{T}\mathbf{x}_{i})^2
+\end{equation}
+
+We can rewrite the objective function in another form, which will be more adapted for differentiation using the properties of matrix multiplication: \\
+
+\begin{align}
+    \hat{R}(\mathbf{\theta})&= \dfrac{1}{2}(\mathbf{t}-\mathbf{Xw})^T(\mathbf{t}-\mathbf{Xw})\\
+    &= \dfrac{1}{2}\mathbf{w}^T(\mathbf{X}^T\mathbf{X})\mathbf{w} - \mathbf{w}^T(\mathbf{X}^T\mathbf{t})
+\end{align}\\
+
+Where $\mathbf{X}$ is the vector of all $\mathbf{x_i}$, which allows us to represent the summation over all $\mathbf{x_i}$ via matrix multiplication. Therefore, follows from the previous formulation because $X^T\mathbf{y}=\sum_{i=1}^{N}\mathbf{x_i} y_i$ and
+$\mathbf{X}\mathbf{X}^T = \sum_{i=1}^{N}\mathbf{x_i} \mathbf{x_i}^T$. \\
+
+Using the following proprieties (where, b and a are vectors and A a matrix):
+
+\begin{equation}
+    \dfrac{\partial a^T A a}{\partial a} = (A + A^T)a
+\end{equation}
+
+\begin{equation}
+    \dfrac{\partial b^T a}{\partial a} = b
+\end{equation}
+
+\begin{equation}
+    b^T A b = tr(b^T A b) =  tr(b b^T A) = tr(A b b^T)
+\end{equation}
+
+We can define the gradient over the NLL as follows: \\
+
+\begin{align}
+    \nabla(\hat{R}(\mathbf{\theta})) &= [\mathbf{X}^T\mathbf{Xw}-\mathbf{X}^T\mathbf{t}] \\
+    &= \sum_{i=1}^{N} \mathbf{x}_i (\mathbf{X}^T\mathbf{x}_i - t^i)
+\end{align}
+
+To find the normal equation, we put the gradient found earlier equal to zero and isolate $\mathbf{\hat{w}}$
+
+\begin{align}
+    [\mathbf{X}^T\mathbf{Xw}-\mathbf{X}^T\mathbf{t}] &= 0 \\
+    \mathbf{X}^T\mathbf{Xw} &= \mathbf{X}^T\mathbf{t}
+\end{align}
+
+\begin{equation}
+    \hat{\mathbf{w}} = (\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^T\mathbf{t}
+\end{equation}
+
+\subsubsection{}
+
+\textit{A general algorithm for solving this optimization problem is gradient
+descent. Give a formula for the gradient of the empirical risk with
+respect to each parameter.}\\
+
+The formula of the gradient of the empirical risk is:
+
+\begin{equation}
+     \nabla(\hat{R}(\mathbf{\theta}) &= [\mathbf{X}^T\mathbf{Xw}-\mathbf{X}^T\mathbf{t}]
+\end{equation}
+
+Using the gradient descent method, for each step, we update the $w$ parameter by substracting the gradient multiplied by a step size parameter (regularized by a lambda factor) until the gradient is close enough to zero. 
+
+\begin{equation}
+    \mathbf{\theta} \leftarrow \mathbf{\theta} - \lambda (\nabla(\hat{R}(\mathbf{\theta}))
+\end{equation}
+
+\subsubsection{}
+\textit{Define the error of the model on a single point (x, t) by f(x) - t.
+Explain in English the relationship between the empirical risk gradient
+and the errors on the training set.} \\
+
+
+The greater the error on the training (as measured by $RSS(\theta)$), the larger the slope of the empirical risk gradient. The direction of the gradient can be used to find a better set of parameters $\theta$ that will give a smaller error. In the case of $argmin$, we move along the negative gradient. \\ 
+
+
+%------------------------------------------------------------------------------
+%-------------------------------Ridge Regression-------------------------------
+%------------------------------------------------------------------------------
+\section{Ridge Regression}
+\textit{Instead of $\hat{R}$, we will now consider a regularized empirical risk: $\widetilde{R}\hat+\lambda L(\theta)$. Here L takes the parameters $\theta$ and returns a scalar penalty. This penalty is smaller for parameters for which we have an a priori preference. The scalar $\lambda \geq 0$ is an hyperparameter that controls how much we favor minimizing the empirical risk versus this penalty. Note that we find the unregularized empirical risk when $\lambda = 0$. We will consider a regularization called Ridge, or weight decay that penalizes the squared norm ($l^2$ norm) of the weights (but not the bias): $L(\theta) = ||w||^2 = \sum_{k=1}^{d}\mathbf{w}_k^2$. We want to minimize $\widetilde{R}$ rather than $\hat{R}$}.
+
+\subsection{}
+\textit{Express the gradient of $\widetilde{R}$. How does it differ from the unregularized empirical risk gradient?} \\
+
+The gradient of the loss term and regularization term are independent during differentiation, so we simply get:
+
+\begin{align}
+    \nabla(\hat{R}(\mathbf{\theta}) + \lambda ||\mathbf{w}||^2_2) &=  
+        \nabla[\hat{R}(\mathbf{\theta})]+ \lambda \nabla[\mathbf{w}^T\mathbf{w}] \\
+    &= [\mathbf{X}^T\mathbf{Xw}-\mathbf{X}^T\mathbf{t}] + \lambda[2\mathbf{w}]
+\end{align}
+
+\subsection{}
+
+Gradient descent is defined as: \\
+%Add the gradient in the formula, instead of just J
+
+\begin{equation}
+    \theta \leftarrow \theta - \eta \frac{\partial{J}}{\partial{\theta}}(\theta)
+\end{equation}
+
+\begin{equation}
+    \theta \leftarrow \theta - \eta ([\mathbf{X}^T\mathbf{Xw}-\mathbf{X}^T\mathbf{t}] + \lambda[2\mathbf{w}])
+\end{equation} \\
+
+We use this framework and the results from the previous question to produce: \\
+
+\lstset{language=Python}
+\lstset{frame=lines}
+\lstset{caption={A Python code}}
+\lstset{label={lst:code_direct}}
+\lstset{basicstyle=\footnotesize}
+\begin{lstlisting}
+
+step_size = 0.2 # hyper-parameter
+threshold = 10e-4 # hyper-parameter
+lambda = 4 # hyper-parameter
+d_Jtheta = uniform(d) # vector randomly initialized to small values 
+                      # distributed around zero, length d
+while sum(abs(d_Jtheta)) > threshold:
+    # t is our targets   
+    # X is our predictors
+    # w is our weight matrix
+
+    d_Jtheta = X.T.dot(X).dot(w) - X.T.dot(t) + lambda * 2 * w           
+    theta -= step_size * d_Jtheta                                  
+
+\end{lstlisting}
+
+\subsection{}
+
+\textit{Define a matrix formulation for the empirical risk and it's gradient. }\\
+
+
+%\begin{align*}
+
+%     % X
+%     \begin{bmatrix} x_1^{(1)} & \dots & x_d^{(1)} \\ \vdots & \ddots & \vdots \\ x_1^{(d)} & \dots & x_d^{(n)} \end{bmatrix}
+%     % X.T
+%     & \begin{bmatrix} x_1^{(1)} & \dots & x_1^{(d)} \\ \vdots & \ddots & \vdots \\ x_d^{(1)} & \dots & x_d^{(n)} \end{bmatrix}
+%     % t
+%     & \begin{bmatrix} t^{(1)} \\ \vdots \\ t^{(n)} \end{bmatrix}
+%     % w.T
+%     & \begin{bmatrix} w^{(1)} & \dots & w^{(d)} \end{bmatrix}
+%     % w
+%     & \begin{bmatrix} w^{(1)} \\ \vdots \\ w^{(d)} \end{bmatrix}
+%     % I
+%     \begin{bmatrix} 1_1^{(1)} & 0 & \dots & 0 & 0 \\ 0 & 1_2^{(1)} & \ddots & \dots & 0 \\ \vdots & \ddots & \ddots & \ddots & \vdots \\ 0 & \dots & \ddots & 1_{d-1}^{(d-1)} & 0 \\ 0 & 0 & \dots & 0 & 1_d^{(d)} \end{bmatrix}  
+
+
+%\end{align*}
+
+The analytical solution to this problem is defined by the normal equation. To find this, we start with the empirical risk $\hat{R}$ and it's gradient, previously defined for linear regression. Let's start with empirical risk: \\
+
+\begin{align*}
+     \hat{R}(\mathbf{\theta}) & = \dfrac{1}{2}\mathbf{w}^T(\mathbf{X}^T\mathbf{X})\mathbf{w} - \mathbf{w}^T(\mathbf{X}^T\mathbf{t}) + \lambda \mathbf{w}^T\mathbf{w} \\
+     \hat{R}(\mathbf{\theta}) & = \dfrac{1}{2}
+         \begin{bmatrix} w^{(1)} & \dots & w^{(d)} \end{bmatrix} % w.t
+         \Big( \begin{bmatrix} x_1^{(1)} & \dots & x_1^{(d)} \\ \vdots & \ddots & \vdots \\ x_d^{(1)} & \dots & x_d^{(n)} \end{bmatrix} % X.T
+         \begin{bmatrix} x_1^{(1)} & \dots & x_d^{(1)} \\ \vdots & \ddots & \vdots \\ x_1^{(d)} & \dots & x_d^{(n)} \end{bmatrix} \Big) % X
+         \begin{bmatrix} w^{(1)} \\ \vdots \\ w^{(d)} \end{bmatrix} \\
+         & - \begin{bmatrix} w^{(1)} & \dots & w^{(d)} \end{bmatrix} % w.T
+         \Big(\begin{bmatrix} x_1^{(1)} & \dots & x_1^{(d)} \\ \vdots & \ddots & \vdots \\ x_d^{(1)} & \dots & x_d^{(n)} \end{bmatrix}
+         \begin{bmatrix} t^{(1)} \\ \vdots \\ t^{(n)} \end{bmatrix} \Big) \\ % t
+         & + \Big\lambda \begin{bmatrix} w^{(1)} & \dots & w^{(d)} \end{bmatrix} %w.T
+         \begin{bmatrix} w^{(1)} \\ \vdots \\ w^{(d)} \end{bmatrix} %w
+\end{align*} \\
+
+and now it's gradient:
+
+\begin{align*}
+    \nabla\hat{R}(\mathbf{\theta}) & = [\mathbf{X}^T\mathbf{Xw}-\mathbf{X}^T\mathbf{t}] + \lambda(2\mathbf{w}) \\
+    & = \Big( \begin{bmatrix} x_1^{(1)} & \dots & x_1^{(d)} \\ \vdots & \ddots & \vdots \\ x_d^{(1)} & \dots & x_d^{(n)} \end{bmatrix} % X.T
+    \begin{bmatrix} x_1^{(1)} & \dots & x_d^{(1)} \\ \vdots & \ddots & \vdots \\ x_1^{(d)} & \dots & x_d^{(n)} \end{bmatrix} % X
+    \begin{bmatrix} w^{(1)} \\ \vdots \\ w^{(d)} \end{bmatrix} % w 
+    - \begin{bmatrix} x_1^{(1)} & \dots & x_1^{(d)} \\ \vdots & \ddots & \vdots \\ x_d^{(1)} & \dots & x_d^{(n)} \end{bmatrix} % X.T
+    \begin{bmatrix} t^{(1)} \\ \vdots \\ t^{(n)} \end{bmatrix} \Big) \\ % t
+    & + \Big\lambda \Big( \Big2 \begin{bmatrix} w^{(1)} \\ \vdots \\ w^{(d)} \end{bmatrix} \Big) % w
+\end{align*}
+%     \nabla\hat{R}(\mathbf{\theta}) & = [\mathbf{X}^T\mathbf{Xw}-\mathbf{X}^T\mathbf{t}]
+% \end{align} \\
+
+% And we set this to zero to obtain: \\
+
+% \begin{align}
+%     \mathbf{X}^TXw & = \mathbf{X}^Tt \\
+%     \hat{w}_{OLS} & = (\mathbf{X}^T\mathbf{X})^{-1} \mathbf{X}^Tt
+% \end{align}
+
+% Solving this equation gives the optimal settings for the weight matrix $\hat{w}$. \\
+
+\subsection{}
+\textit{Derive a matrix formulation of the analytical solution to the ridge
+regression minimization problem by expressing that the gradient is
+null at the optimum. What happens when N $<$ d and $\lambda$ = 0 ?} \\
+
+The analytical solution to this problem is defined by the normal equation. To find this, we set the previously-found gradient of the ridge regression problem: \\
+
+\begin{equation}
+    \nabla(RSS(w) + \lambda ||w||^2) =  
+        [\mathbf{X}^T\mathbf{Xw}-\mathbf{X}^T\mathbf{t}] + 
+        \lambda (2 \mathbf{w})
+\end{equation} \\
+
+And we set this to zero to obtain: \\
+
+\begin{equation}
+     \mathbf{X}^T\mathbf{Xw} + \lambda(2 \mathbf{w})= \mathbf{X}^T\mathbf{t}
+\end{equation}
+
+Let $\mathbf{G}$ be the Gram matrix: \\
+
+\begin{align*}
+\mathbf{G} = \begin{bmatrix} x_1^{(1)} & \dots & x_1^{(d)} \\ \vdots & \ddots & \vdots \\ x_d^{(1)} & \dots & x_d^{(n)} \end{bmatrix} % X.T
+    \begin{bmatrix} x_1^{(1)} & \dots & x_d^{(1)} \\ \vdots & \ddots & \vdots \\ x_1^{(d)} & \dots & x_d^{(n)} \end{bmatrix} % X
+\end{align*}
+
+Then we can write: \\
+
+\begin{align*}
+    \mathbf{\hat{w}_{OLS}} & = (\lambda \mathbf{I}_D + \mathbf{X}^T\mathbf{X})^{-1} \mathbf{X}^T\mathbf{t} \\
+    & = \big( \big\lambda \begin{bmatrix} 1_1^{(1)} & 0 & \dots & 0 & 0 \\ 0 & 1_2^{(1)} & \ddots & \dots & 0 \\ \vdots & \ddots & \ddots & \ddots & \vdots \\ 0 & \dots & \ddots & 1_{d-1}^{(d-1)} & 0 \\ 0 & 0 & \dots & 0 & 1_d^{(d)} \end{bmatrix}  % I
+    + \mathbf{G} \big) ^{-1} % G
+    \begin{bmatrix} x_1^{(1)} & \dots & x_1^{(d)} \\ \vdots & \ddots & \vdots \\ x_d^{(1)} & \dots & x_d^{(n)} \end{bmatrix} % X.T
+    \begin{bmatrix} t^{(1)} \\ \vdots \\ t^{(n)} \end{bmatrix} % t
+\end{align*}
+
+Solving this equation gives the optimal settings for the weight matrix $\mathbf{\hat{w}}$. \\
+
+If $n < d$ the Gram matrix $\mathbf{X}^T\mathbf{X}$, which is $d \times d$, has a rank lower than $n$:\\
+
+\begin{equation}
+    rk(\mathbf{X}^T\mathbf{X} \leq n << d)
+\end{equation}
+
+Then the Gram matrix is not invertable (another step in our equation) because most of the eigenvalues will likely to be zero! Therefore, the equation cannot be solved analytically, making variable estimation and selection complex. \\
+
+If we add a value to the diagonal of the Gram matrix, as in Ridge regression $(\lambda \mathbf{I}_D + \mathbf{X}^T \mathbf{X})$ with $\lambda > 0$, this can inflate the independence between the variables in the Gram matrix, making it 'better conditioned' and more likely to be invertable than $\mathbf{X}^T\mathbf{X}$. Hence, when $\lambda = 0$, the inversion necessary for variable estimation becomes complex, even impossible in many cases.\\
+
+
+%------------------------------------------------------------------------------
+%----------------------------Nonlinear Pre-Processing--------------------------
+%------------------------------------------------------------------------------
+\section{Nonlinear Pre-Procesing}
+
+\subsection{}
+
+\textit{Give a detailed explanation of $f(x)$ when we us the nonlinear transform $\phi(x)$ on our inputs first.} \\
+
+\begin{align}
+     \widetilde{f}_k(\mathbf{x}) &= \sum_{i=1}^k \mathbf{w}_i \mathbf{x}^i +b \\ & =\mathbf{w}^{T}\phi_k(\mathbf{x}) + b
+\end{align} \\
+
+\subsection{}
+
+\textit{Give a detailed explanation of the parameters and their dimensions.} \\
+
+Let $k$ be the degree of the polynomial transformation generated by the function $\phi_k(x)$.
+The number of parameters in a normal linear regression is $\theta \in {\rm I\!R}^{d+1}$, where we add 1
+for the bias term. In this case, we start with an $x$ of $d=1$, but $\phi(x)$
+expands it to be $k$ dimensions, so we end up with a final dimensionality of $\theta \in {\rm I\!R}^{k+1}$. In general, the dimensionality is $\theta \in {\rm I\!R}^{dk+1}$ \\
+
+\subsection{}
+
+\textit{In dimension d $>=$ 2, a polynomial transformation should include not
+only the individual variable exponents $x_i^j$ , for powers j $<=$ k, and variables
+i $<=$ d, but also all the interaction terms of order k and less
+between several variables (e.g. terms like $x_i^{j_1} x_l^{j_2}$ , for $j_1 + j_2 <= k$ and variables i, l $<=$ d). For d = 2, write down as a function of each of
+the 2 components of x the transformations $\phi_{poly^1}(x)$, $\phi_{poly^2}(x)$, and  $\phi_{poly^3}(x)$.} \\
+
+In this case, all subscripts all denote the dimension of $\mathbf{x}$, and superscripts denote powers. In the case where $d=2$: \\
+
+\begin{equation}
+    \phi_{poly^{1}}(x) = \{ x_1, x_2 \}
+\end{equation} \\
+
+\begin{equation}
+    \phi_{poly^{2}}(x) = \{ x_1, x_2, x_1 x_2, x_1^{2}, x_2^{2} \}
+\end{equation} \\
+
+\begin{equation}
+    \phi_{poly^{3}}(x) = \{
+        x_1, x_2, 
+        x_1^{2}, x_2^{2}, 
+        x_1 x_2, x_1 x_2^{2}, x_1^{2} x_2, x_1^{3}, x_2^{3}\}
+\end{equation} \\
+
+So $\phi_{poly^{1}}(x)$ gives 2 terms, $\phi_{poly^{2}}(x)$ gives 6 terms, and $\phi_{poly^{3}}(x)$ gives 9 terms. \\
+
+\subsection{}
+\textit{What is the dimensionality of $\phi_{poly^k}(x)$, as a function of $d$ and $k$?} \\
+
+Let $p$ be the degree of polynomial: ${1, 2, ..., k}$. \\
+
+\begin{equation}
+    \sum_{p=1}^{k} \binom{(d-1)+p}{p} 
+\end{equation}
+
+\end{document}
